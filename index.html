@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fête des Voisins</title>
+  <title>HEVEA - Fête des Voisins 2025</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,6 +40,8 @@
       padding: 0.7rem;
       width: 100%;
       cursor: pointer;
+      margin: auto;
+      display: block;
     }
     button:hover {
       background: #2980b9;
@@ -56,6 +58,7 @@
     }
     th {
       background: #f0f0f0;
+      text-align: center;
     }
     .delete-btn {
       background: #e74c3c;
@@ -71,13 +74,15 @@
   </style>
 </head>
 <body>
-  <h1>🎉 Fête des Voisins</h1>
+  <h1>🎉 HEVEA - Fête des Voisins 2025</h1>
 
   <h2>Inscription</h2>
   <form id="voteForm">
-    <label>Votre nom : <input type="text" name="nom" required></label>
+    <label>Nom : <input type="text" name="nom" required></label>
     <label>Nombre de personnes : <input type="number" name="nombre" required></label>
-    <label>Ce que vous apportez : <input type="text" name="apport" required></label>
+    <label>Ce que vous apportez (boissons, nourritures) : <input type="text" name="apport" required></label>
+    <label>Ce que vous apportez (chaises, tables ...) : <input type="text" name="materiel"></label>    
+    <br />
     <button type="submit">Envoyer</button>
   </form>
 
@@ -87,7 +92,8 @@
       <tr>
         <th>Nom</th>
         <th>Nombre</th>
-        <th>Apport</th>
+        <th>Apporte</th>
+        <th>Matériel</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -109,10 +115,11 @@
       data.results.forEach(p => {
         tbody.innerHTML += `
           <tr>
-            <td>${p.nom}</td>
-            <td>${p.nombre}</td>
-            <td>${p.apport}</td>
-            <td><button class="delete-btn" onclick="deleteParticipant('${p.id}')">Supprimer</button></td>
+            <td>${p.nom || ""}</td>
+            <td>${p.nombre ?? ""}</td>
+            <td>${p.apport || ""}</td>
+	    <td>${p.materiel || ""}</td>
+            <td><button class="delete-btn" onclick="deleteParticipant('${p.id}')";margin: 0 auto;>Supprimer</button></td>
           </tr>`;
       });
     }
@@ -181,7 +188,9 @@
     fetchParticipants();
 
     // Mettre à jour la liste des participants toutes les 10 secondes
-    setInterval(fetchParticipants, 10000);
+    setInterval(fetchParticipants, 5000);
+
+
   </script>
 </body>
 </html>
