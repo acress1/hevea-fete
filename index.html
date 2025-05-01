@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HEVEA - Fête des Voisins 2025</title>
   <style>
     body {
@@ -71,42 +71,49 @@
     .delete-btn:hover {
       background: #c0392b;
     }
+       .modify-btn {
+      background: green;
+      color: white;
+      border: none;
+      padding: 0.3rem;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .modify-btn:hover {
+      background: green;
+    }
   </style>
 </head>
 <body>
+
   <h1>🎉 HEVEA - Fête des Voisins 2025</h1>
+  <h2> Le 23 mai 2025</h2>
 
-  <h2>Inscription</h2>
-  <form id="voteForm">
-    <label>Nom : <input type="text" name="nom" required></label>
-    <label>Nombre de personnes : <input type="text" name="nombre" required></label>
-    <label>Ce que vous apportez (boissons, nourritures) : <input type="text" name="apport" required></label>
-    <label>Ce que vous apportez (chaises, tables ...) : <input type="text" name="materiel"></label>    
-    <br />
-    <button type="submit">Envoyer</button>
-  </form>
+<form id="voteForm">
+  <label>Nom : <input name="nom" required /></label><br><br>
+  <label>Nombre de personnes : <input name="nombre" required /></label><br><br>
+  <label>Ce que vous apportez : <input name="apport" /></label><br><br>
+  <label>Ce que vous apportez (matériel) : <input name="materiel" /></label><br><br>
+  <br />
+  <button type="submit">Envoyer</button>
+</form>
 
-  <h2>👥 Liste des participants</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Nombre</th>
-        <th>Apporte</th>
-        <th>Matériel</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="participants"></tbody>
-  </table>
+<h2>Liste des participants</h2>
+<table>
+  <thead>
+    <tr><th>Nom</th><th>Nombre</th><th>Apport</th><th>Materiel</th><th>Modifier</th><th>Supprimer</th></tr>
+  </thead>
+  <tbody id="participants"></tbody>
+</table>
 
-  <script>
-    const API_URL = "https://api.baserow.io/api/database/rows/table/522856/?user_field_names=true";
+<script>
+    const API_URL = "https://api.baserow.io/api/database/rows/table/522856/";
     const TOKEN = "Token 8I5hStRylG61hWfuabIH1I5Qo6O0d2w1";
+    let currentEditId = null;
 
     // Fonction pour récupérer la liste des participants
     async function fetchParticipants() {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_URL}?user_field_names=true`, {
         headers: { Authorization: TOKEN }
       });
       const data = await res.json();
@@ -115,28 +122,37 @@
       data.results.forEach(p => {
         tbody.innerHTML += `
           <tr>
-            <td>${p.nom || ""}</td>
-            <td>${p.nombre || ""}</td>
-            <td>${p.apport || ""}</td>
-	    <td>${p.materiel || ""}</td>
-            <td><button class="delete-btn" onclick="deleteParticipant('${p.id}')";margin: 0 auto;>Supprimer</button></td>
+            <td>${p.nom}</td>
+            <td>${p.nombre}</td>
+            <td>${p.apport}</td>
+	          <td>${p.materiel}</td>
+            <td>
+            <button class="modify-btn" onclick="editParticipant('${p.id}', '${p.nom}', '${p.nombre}', '${p.apport}', '${p.materiel}')";margin: 0 auto;>Modifier</button>
+            </td><td><button class="delete-btn" onclick="deleteParticipant('${p.id}')";margin: 0 auto;>Supprimer</button>
+            </td>
           </tr>`;
       });
     }
 
-    // Soumettre le formulaire et envoyer les données à Baserow
-    document.getElementById("voteForm").addEventListener("submit", async e => {
+       // Soumettre le formulaire et envoyer les données à Baserow
+       document.getElementById("voteForm").addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.target;
       const payload = {
-        nom: form.nom.value,
-        nombre: form.nombre.value,
-        apport: form.apport.value
+        nom: form.nom.value.trim() || "",
+        nombre: form.nombre.value.trim() || "",
+        apport: form.apport.value.trim() || "",
+        materiel: form.materiel.value.trim() || ""
       };
 
+
+
+      const url = currentEditId ? `${API_URL}${currentEditId}/?user_field_names=true` : `${API_URL}?user_field_names=true` ;
+
+      const method = currentEditId ? "PATCH" : "POST" ;
       try {
-        const response = await fetch(API_URL, {
-          method: "POST",
+        const response = await fetch(url, {
+          method,
           headers: {
             "Content-Type": "application/json",
             Authorization: TOKEN
@@ -152,6 +168,8 @@
         }
 
         form.reset();
+        currentEditId = null;
+        form.querySelector("button[type='submit']").textContent = "Envoyer";
         fetchParticipants();
         document.getElementById("participants").scrollIntoView({ behavior: "smooth" });
       } catch (error) {
@@ -160,8 +178,21 @@
       }
     });
 
-    // Supprimer une participation
-    async function deleteParticipant(id) {
+    // Modifier une participation
+
+  function editParticipant(id, nom, nombre, apport, materiel) {
+    const form = document.getElementById("voteForm");
+    form.nom.value = nom;
+    form.nombre.value = nombre;
+    form.apport.value = apport;
+    form.materiel.value = materiel;
+    currentEditId = id;
+    form.querySelector("button[type='submit']").textContent = "Mettre à jour";
+      }
+
+
+   // Supprimer une participation
+   async function deleteParticipant(id) {
       if (confirm("Êtes-vous sûr de vouloir supprimer cette participation ?")) {
         try {
           const response = await fetch(`https://api.baserow.io/api/database/rows/table/522856/${id}/`, {
@@ -184,13 +215,36 @@
       }
     }
 
-    // Charger les participants au démarrage
-    fetchParticipants();
+/*   document.getElementById("voteForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      nom: form.nom.value,
+      nombre: form.nombre.value,
+      apport: form.apport.value,
+      materiel: form.materiel.value
+    };
 
-    // Mettre à jour la liste des participants toutes les 10 secondes
-    setInterval(fetchParticipants, 5000);
+    const url = currentEditId
+      ? `${BASE_URL}${currentEditId}/`
+      : `${BASE_URL}?user_field_names=true`;
+
+    const method = currentEditId ? "PATCH" : "POST";
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: TOKEN
+      },
+      body: JSON.stringify(payload)
+    }); */
 
 
-  </script>
+  fetchParticipants();
+  setInterval(fetchParticipants, 500);
+
+</script>
+
 </body>
 </html>
