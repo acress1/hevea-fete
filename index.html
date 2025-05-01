@@ -247,7 +247,7 @@
         currentEditId = null;
         form.querySelector("button[type='submit']").textContent = "Envoyer";
         fetchParticipants();
-        document.getElementById("participants").scrollIntoView({ behavior: "smooth" });
+        document.getElementById("participants").scrollIntoView(top = false);
       } catch (error) {
         console.error("Erreur réseau:", error);
         alert("Erreur réseau : " + error.message);
