@@ -72,23 +72,89 @@
       background: #c0392b;
     }
        .modify-btn {
-      background: green;
-      color: white;
+      background: rgb(221, 221, 110);
+      color: black;
       border: none;
       padding: 0.3rem;
       cursor: pointer;
       border-radius: 5px;
     }
     .modify-btn:hover {
-      background: green;
+      background: rgb(223, 223, 19);
     }
+/*     @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin-bottom: 1rem;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+      td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+      }
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        flex: 1;
+      }
+    } */
+    .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.card {
+  display:flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.card p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.card .actions {
+  margin-top: 0.5rem;
+}
+
+.card button {
+  margin-right: 0.5rem;
+  border-radius: 8px;
+}
+
+
   </style>
 </head>
 <body>
 
   <h1>🎉 HEVEA - Fête des Voisins 2025</h1>
   <h2> Le 23 mai 2025</h2>
-
+  <p>Bonjour, on organise la fête des voisins le 23 mai 2025 en fin d'après-midi/début de soirée (heure encore à définir !).</p>
+  <p>Pour prévoir au mieux et s'assurer que l'on ne manque de rien, merci d'écrire ci-dessous votre/vos nom(s), si vous venez, combien vous serez, et ce que vous ramenez !</p>
+  <p>Soyez précis dans ce que vous allez ramener à manger/à boire, pour prévoir au mieux et s'assurer que tout le monde aura tout ce qu'il faut :)</p>
 <form id="voteForm">
   <label>Nom : <input name="nom" required /></label><br><br>
   <label>Nombre de personnes : <input name="nombre" required /></label><br><br>
@@ -99,12 +165,13 @@
 </form>
 
 <h2>Liste des participants</h2>
-<table>
+<div id="participants" class="cards"></div>
+<!-- <table>
   <thead>
     <tr><th>Nom</th><th>Nombre</th><th>Apport</th><th>Materiel</th><th>Modifier</th><th>Supprimer</th></tr>
   </thead>
   <tbody id="participants"></tbody>
-</table>
+</table> -->
 
 <script>
     const API_URL = "https://api.baserow.io/api/database/rows/table/522856/";
@@ -117,20 +184,25 @@
         headers: { Authorization: TOKEN }
       });
       const data = await res.json();
-      const tbody = document.getElementById("participants");
-      tbody.innerHTML = "";
+      // const tbody = document.getElementById("participants");
+      const container = document.getElementById("participants");
+      container.innerHTML = "";
+      // tbody.innerHTML = "";
       data.results.forEach(p => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${p.nom}</td>
-            <td>${p.nombre}</td>
-            <td>${p.apport}</td>
-	          <td>${p.materiel}</td>
-            <td>
-            <button class="modify-btn" onclick="editParticipant('${p.id}', '${p.nom}', '${p.nombre}', '${p.apport}', '${p.materiel}')";margin: 0 auto;>Modifier</button>
-            </td><td><button class="delete-btn" onclick="deleteParticipant('${p.id}')";margin: 0 auto;>Supprimer</button>
-            </td>
-          </tr>`;
+        container.innerHTML += `
+      <div class="card">
+        <h3>${p.nom || "(Sans nom)"}</h3>
+        <p style="text-align:left"><strong>Nombre :</strong> ${p.nombre || "?"}</p>
+        <p style="text-align:left"><strong>Apporte :</strong></p> <p> ${p.apport || "(non précisé)"}</p>
+        <br>
+        <p style="text-align:left"><strong>Matériel :</strong> ${p.materiel || ""}</p>
+        <p></p>
+        <div class="actions">
+          <button class="modify-btn" onclick="editParticipant(${p.id}, '${p.nom}', '${p.nombre}', '${p.apport}', '${p.materiel}')">Modifier</button>
+          <br />
+          <button class="delete-btn" onclick="deleteParticipant(${p.id}, '${p.nom}')">Supprimer</button>
+        </div>
+      </div>`;
       });
     }
 
@@ -142,7 +214,7 @@
         nom: form.nom.value.trim() || "",
         nombre: form.nombre.value.trim() || "",
         apport: form.apport.value.trim() || "",
-        materiel: form.materiel.value.trim() || ""
+        materiel: form.materiel.value.trim() || "-"
       };
 
 
@@ -192,8 +264,8 @@
 
 
    // Supprimer une participation
-   async function deleteParticipant(id) {
-      if (confirm("Êtes-vous sûr de vouloir supprimer cette participation ?")) {
+   async function deleteParticipant(id, nom) {
+      if (confirm("Êtes-vous sûr de vouloir supprimer la participation de "+nom+" ?")) {
         try {
           const response = await fetch(`https://api.baserow.io/api/database/rows/table/522856/${id}/`, {
             method: "DELETE",
