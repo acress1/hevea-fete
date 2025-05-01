@@ -86,11 +86,11 @@
     const API_URL = "https://api.baserow.io/api/database/rows/table/522856/?user_field_names=true";
     const TOKEN = "Token 8I5hStRylG61hWfuabIH1I5Qo6O0d2w1";
 
+    // Fonction pour récupérer la liste des participants
     async function fetchParticipants() {
       const res = await fetch(API_URL, {
         headers: { Authorization: TOKEN }
       });
-	setInterval(fetchParticipants, 10000);
       const data = await res.json();
       const tbody = document.getElementById("participants");
       tbody.innerHTML = "";
@@ -104,6 +104,7 @@
       });
     }
 
+    // Soumettre le formulaire et envoyer les données à Baserow
     document.getElementById("voteForm").addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.target;
@@ -112,19 +113,35 @@
         nombre: parseInt(form.nombre.value),
         apport: form.apport.value
       };
-      await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: TOKEN
-        },
-        body: JSON.stringify(payload)
-      });
-      form.reset();
-      fetchParticipants();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: TOKEN
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const err = await response.text();
+          alert("Erreur: " + err);
+          console.error("Erreur Baserow:", err);
+          return;
+        }
+
+        form.reset();
+        fetchParticipants();
+        document.getElementById("participants").scrollIntoView({ behavior: "smooth" });
+      } catch (error) {
+        console.error("Erreur réseau:", error);
+        alert("Erreur réseau : " + error.message);
+      }
     });
 
+    // Charger les participants au démarrage
     fetchParticipants();
-  </script>
-</body>
-</html>
+
+    // Mettre à jour la liste des participants toutes les 10 secondes
+    setInterval(fetchParticipants, 10000);
