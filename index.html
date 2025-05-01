@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fête des Voisins</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    form {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+    }
+    button {
+      margin-top: 1rem;
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 0.7rem;
+      width: 100%;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎉 Fête des Voisins</h1>
+
+  <h2>Inscription</h2>
+  <form id="voteForm">
+    <label>Votre nom : <input type="text" name="nom" required></label>
+    <label>Nombre de personnes : <input type="number" name="nombre" required></label>
+    <label>Ce que vous apportez : <input type="text" name="apport" required></label>
+    <button type="submit">Envoyer</button>
+  </form>
+
+  <h2>👥 Liste des participants</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Nombre</th>
+        <th>Apport</th>
+      </tr>
+    </thead>
+    <tbody id="participants"></tbody>
+  </table>
+
+  <script>
+    const API_URL = "https://api.baserow.io/api/database/rows/table/522856/?user_field_names=true";
+    const TOKEN = "8I5hStRylG61hWfuabIH1I5Qo6O0d2w1";
+
+    async function fetchParticipants() {
+      const res = await fetch(API_URL, {
+        headers: { Authorization: TOKEN }
+      });
+      const data = await res.json();
+      const tbody = document.getElementById("participants");
+      tbody.innerHTML = "";
+      data.results.forEach(p => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${p.nom}</td>
+            <td>${p.nombre}</td>
+            <td>${p.apport}</td>
+          </tr>`;
+      });
+    }
+
+    document.getElementById("voteForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        nom: form.nom.value,
+        nombre: parseInt(form.nombre.value),
+        apport: form.apport.value
+      };
+      await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: TOKEN
+        },
+        body: JSON.stringify(payload)
+      });
+      form.reset();
+      fetchParticipants();
+    });
+
+    fetchParticipants();
+  </script>
+</body>
+</html>
