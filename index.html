@@ -79,7 +79,7 @@
   <h2>Inscription</h2>
   <form id="voteForm">
     <label>Nom : <input type="text" name="nom" required></label>
-    <label>Nombre de personnes : <input type="number" name="nombre" required></label>
+    <label>Nombre de personnes : <input type="text" name="nombre" required></label>
     <label>Ce que vous apportez (boissons, nourritures) : <input type="text" name="apport" required></label>
     <label>Ce que vous apportez (chaises, tables ...) : <input type="text" name="materiel"></label>    
     <br />
@@ -116,7 +116,7 @@
         tbody.innerHTML += `
           <tr>
             <td>${p.nom || ""}</td>
-            <td>${p.nombre ?? ""}</td>
+            <td>${p.nombre || ""}</td>
             <td>${p.apport || ""}</td>
 	    <td>${p.materiel || ""}</td>
             <td><button class="delete-btn" onclick="deleteParticipant('${p.id}')";margin: 0 auto;>Supprimer</button></td>
