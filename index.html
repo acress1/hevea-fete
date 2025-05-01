@@ -90,6 +90,7 @@
       const res = await fetch(API_URL, {
         headers: { Authorization: TOKEN }
       });
+	setInterval(fetchParticipants, 10000);
       const data = await res.json();
       const tbody = document.getElementById("participants");
       tbody.innerHTML = "";
